@@ -1,0 +1,20 @@
+{
+  "name": "app-idea-orchestrator",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=20 <23"
+  },
+  "scripts": {
+    "backend": "cd backend && npm run dev",
+    "web": "cd web && npm run dev",
+    "mobile": "cd mobile && npx expo start",
+    "install:all": "cd backend && npm install && cd ../web && npm install && cd ../mobile && npm install",
+    "dev": "npm run backend & npm run web",
+    "start": "cd backend && npm start",
+
+    "start:all": "bash scripts/start-all.sh",
+    "stop:all": "bash scripts/stop-all.sh"
+  },
+  "devDependencies": {}
+}
