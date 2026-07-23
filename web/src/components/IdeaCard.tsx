@@ -54,6 +54,11 @@ export default function IdeaCard({ idea, execution, onExecute, onViewExecution, 
           <span className="text-xs text-slate-500 border border-white/8 rounded-full px-2 py-0.5">
             {idea.category}
           </span>
+          {typeof idea.validationConfidence === "number" && (
+            <span className="text-[10px] text-emerald-400 border border-emerald-500/25 rounded-full px-2 py-0.5 font-mono">
+              ✓ {idea.validationConfidence}/10
+            </span>
+          )}
           <button
             onClick={(e) => { e.stopPropagation(); onInfo(idea); }}
             className="text-slate-600 hover:text-indigo-300 transition-colors rounded p-0.5 hover:bg-indigo-500/10"

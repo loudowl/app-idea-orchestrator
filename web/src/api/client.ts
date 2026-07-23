@@ -23,6 +23,23 @@ export interface ModelsResponse {
   providers: Record<Provider, { available: boolean; model: string }>;
 }
 
+export interface IdeaScores {
+  nicheFit?: number;
+  demand?: number;
+  monetizationEase?: number;
+  competition?: number;
+  feasibility?: number;
+  novelty?: number;
+  distribution?: number;
+  overall?: number;
+}
+
+export interface StepModelUsed {
+  model: string;
+  think: boolean;
+  effort?: string;
+}
+
 export interface Idea {
   _id: string;
   name: string;
@@ -43,6 +60,21 @@ export interface Idea {
   trendSources: string[];
   buildPrompt: string;
   createdAt: string;
+  // Market & niche context (added by the smarter pipeline)
+  niche?: string;
+  targetUser?: string;
+  problem?: string;
+  competitors?: string[];
+  marketGap?: string;
+  willingnessToPay?: string;
+  differentiator?: string;
+  researchSources?: string[];
+  // Validation
+  scores?: IdeaScores;
+  validationConfidence?: number;
+  // Provenance
+  modelsUsed?: Record<string, StepModelUsed>;
+  modelPreset?: string;
 }
 
 export interface IdeasResponse {
@@ -133,7 +165,53 @@ export const retryExecution = (
 
 export const fetchModels = (): Promise<ModelsResponse> => req("/api/models");
 
+// ── Agent model settings ──────────────────────────────────────────────────────
+
+export interface StepConfig {
+  model: string;
+  think: boolean;
+  effort: string;
+}
+
+export interface StepMeta {
+  id: string;
+  label: string;
+  canThink: boolean;
+  recommendedTier: "premium" | "balanced" | "economy";
+  desc: string;
+}
+
+export interface ModelInfo {
+  id: string;
+  label: string;
+  tier: "premium" | "balanced" | "economy";
+  cost: number;
+}
+
+export interface AgentSettings {
+  preset: string;
+  steps: Record<string, StepConfig>;
+  presets: Record<string, Record<string, Partial<StepConfig>>>;
+  catalog: ModelInfo[];
+  stepsMeta: StepMeta[];
+  effortLevels: string[];
+}
+
+export const fetchAgentSettings = (): Promise<AgentSettings> =>
+  req("/api/agent/settings");
+
+export const saveAgentSettings = (body: {
+  preset: string;
+  steps: Record<string, StepConfig>;
+}): Promise<{ preset: string; steps: Record<string, StepConfig> }> =>
+  req("/api/agent/settings", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
 // ── SSE ───────────────────────────────────────────────────────────────────────
 
 export const SSE_URL = `${BASE}/api/events`;
 export const WS_URL = BASE.replace(/^http/, "ws") + "/ws";
+export const AGENT_STREAM_URL = `${BASE}/api/agent/stream`;

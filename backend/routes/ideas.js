@@ -51,4 +51,54 @@ router.post("/force-run", async (req, res) => {
   }
 });
 
+// ── Agent progress SSE proxy ──────────────────────────────────────────────────
+
+// GET /api/agent/stream — proxy the app-idea-agent SSE stream directly to the caller
+router.get("/agent/stream", async (req, res) => {
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache, no-transform");
+  res.setHeader("Connection", "keep-alive");
+  res.setHeader("X-Accel-Buffering", "no");
+  res.flushHeaders();
+
+  let upstreamRes;
+  try {
+    upstreamRes = await fetch(`${IDEA_AGENT}/api/agent/stream`);
+  } catch (e) {
+    res.write(`data: {"type":"error","message":"app-idea-agent unavailable"}\n\n`);
+    res.end();
+    return;
+  }
+
+  upstreamRes.body.pipe(res);
+  req.on("close", () => {
+    if (upstreamRes.body && !upstreamRes.body.destroyed) {
+      upstreamRes.body.destroy();
+    }
+  });
+});
+
+// ── Agent model settings proxy ────────────────────────────────────────────────
+
+// GET /api/agent/settings — resolve effective per-step config + catalog metadata
+router.get("/agent/settings", (req, res) => proxy(res, "/api/settings"));
+
+// PUT /api/agent/settings — persist preset + per-step overrides
+router.put("/agent/settings", async (req, res) => {
+  try {
+    const r = await fetch(`${IDEA_AGENT}/api/settings`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(req.body),
+    });
+    const data = await r.json();
+    res.status(r.status).json(data);
+  } catch (e) {
+    res.status(502).json({ error: `app-idea-agent unavailable: ${e.message}` });
+  }
+});
+
+// GET /api/agent/catalog — model catalog + presets + step metadata + effort levels
+router.get("/agent/catalog", (req, res) => proxy(res, "/api/models"));
+
 module.exports = router;

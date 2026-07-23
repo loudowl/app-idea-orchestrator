@@ -189,6 +189,102 @@ export default function IdeaDetailModal({ idea, onClose }: Props) {
               <p className="text-sm text-slate-400 leading-relaxed">{idea.complexityRationale}</p>
             </Section>
 
+            {/* Market & Niche — only shown for ideas from the smarter pipeline */}
+            {(idea.niche || idea.targetUser || idea.problem || idea.marketGap || idea.differentiator) && (
+              <div className="bg-emerald-500/5 border border-emerald-500/15 rounded-xl p-4">
+                <div className="text-[10px] uppercase tracking-widest text-slate-600 mb-3 font-mono">Market & Niche</div>
+                <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                  {idea.niche && (
+                    <div>
+                      <div className="text-[9px] uppercase tracking-widest text-slate-600 mb-1 font-mono">Niche</div>
+                      <div className="text-sm text-slate-300">{idea.niche}</div>
+                    </div>
+                  )}
+                  {idea.targetUser && (
+                    <div>
+                      <div className="text-[9px] uppercase tracking-widest text-slate-600 mb-1 font-mono">Target user</div>
+                      <div className="text-sm text-slate-300">{idea.targetUser}</div>
+                    </div>
+                  )}
+                  {idea.problem && (
+                    <div className="col-span-2">
+                      <div className="text-[9px] uppercase tracking-widest text-slate-600 mb-1 font-mono">Problem</div>
+                      <div className="text-sm text-slate-300">{idea.problem}</div>
+                    </div>
+                  )}
+                  {idea.marketGap && (
+                    <div className="col-span-2">
+                      <div className="text-[9px] uppercase tracking-widest text-slate-600 mb-1 font-mono">Market gap</div>
+                      <div className="text-sm text-slate-300">{idea.marketGap}</div>
+                    </div>
+                  )}
+                  {idea.differentiator && (
+                    <div className="col-span-2">
+                      <div className="text-[9px] uppercase tracking-widest text-slate-600 mb-1 font-mono">Differentiator</div>
+                      <div className="text-sm text-slate-300">{idea.differentiator}</div>
+                    </div>
+                  )}
+                  {idea.willingnessToPay && (
+                    <div>
+                      <div className="text-[9px] uppercase tracking-widest text-slate-600 mb-1 font-mono">Willingness to pay</div>
+                      <div className="text-sm text-slate-300">{idea.willingnessToPay}</div>
+                    </div>
+                  )}
+                </div>
+                {(idea.competitors ?? []).length > 0 && (
+                  <div className="mt-4">
+                    <div className="text-[9px] uppercase tracking-widest text-slate-600 mb-2 font-mono">Competitors</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {(idea.competitors ?? []).map((c, i) => (
+                        <span key={i} className="text-[10px] px-2 py-0.5 bg-white/5 border border-white/8 rounded text-slate-400 font-mono">
+                          {c}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Validation Scores */}
+            {idea.scores && (
+              <div className="bg-white/3 border border-white/8 rounded-xl p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-[10px] uppercase tracking-widest text-slate-600 font-mono">Validation Scores</div>
+                  {typeof idea.validationConfidence === "number" && (
+                    <span className="text-[10px] font-mono text-emerald-400 border border-emerald-500/20 rounded-full px-2 py-0.5">
+                      confidence {idea.validationConfidence}/10
+                    </span>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-x-8 gap-y-3">
+                  {([
+                    ["Niche fit",     idea.scores.nicheFit],
+                    ["Demand",        idea.scores.demand],
+                    ["Monetization",  idea.scores.monetizationEase],
+                    ["Open market",   idea.scores.competition],
+                    ["Feasibility",   idea.scores.feasibility],
+                    ["Novelty",       idea.scores.novelty],
+                    ["Distribution",  idea.scores.distribution],
+                    ["Overall",       idea.scores.overall],
+                  ] as [string, number | undefined][])
+                    .filter(([, v]) => typeof v === "number")
+                    .map(([label, v]) => (
+                      <div key={label} className="flex items-center gap-2">
+                        <span className="text-[9px] uppercase tracking-widest text-slate-600 font-mono w-24 shrink-0">{label}</span>
+                        <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
+                          <div
+                            className={clsx("h-full rounded-full", (v ?? 0) >= 8 ? "bg-emerald-400" : (v ?? 0) >= 5 ? "bg-amber-400" : "bg-rose-400")}
+                            style={{ width: `${((v ?? 0) / 10) * 100}%` }}
+                          />
+                        </div>
+                        <span className="text-[10px] font-mono text-slate-500 w-5 text-right">{v}</span>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+
             {/* Build prompt */}
             {idea.buildPrompt && (
               <Section title="Build Prompt">
@@ -205,6 +301,37 @@ export default function IdeaDetailModal({ idea, onClose }: Props) {
                   </button>
                 </div>
               </Section>
+            )}
+
+            {/* Generated With — model provenance */}
+            {idea.modelsUsed && Object.keys(idea.modelsUsed).length > 0 && (
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="text-[10px] uppercase tracking-widest text-slate-600 font-mono">Generated with</div>
+                  {idea.modelPreset && (
+                    <span className="text-[9px] font-mono text-slate-600 border border-white/5 rounded-full px-2 py-0.5">
+                      {idea.modelPreset} preset
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {(["research", "niches", "candidates", "critique", "refine"] as const)
+                    .filter((s) => idea.modelsUsed![s])
+                    .map((s) => {
+                      const step = idea.modelsUsed![s];
+                      const shortModel = step.model.replace(/^claude-/, "").replace(/-\d{8}$/, "");
+                      return (
+                        <span
+                          key={s}
+                          title={step.model}
+                          className="text-[9px] px-2 py-0.5 bg-white/5 border border-white/8 rounded text-slate-500 font-mono"
+                        >
+                          {s}: {shortModel}{step.think ? ` +think(${step.effort})` : ""}
+                        </span>
+                      );
+                    })}
+                </div>
+              </div>
             )}
 
             {/* Footer */}

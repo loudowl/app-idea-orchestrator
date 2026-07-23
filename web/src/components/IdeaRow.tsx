@@ -57,6 +57,13 @@ export default function IdeaRow({ idea, execution, onExecute, onViewExecution, o
         {idea.complexity}
       </span>
 
+      {/* Validation confidence */}
+      {typeof idea.validationConfidence === "number" && (
+        <span className="hidden lg:inline-flex text-[10px] text-emerald-400 border border-emerald-500/25 rounded-full px-2 py-0.5 font-mono flex-shrink-0">
+          ✓ {idea.validationConfidence}/10
+        </span>
+      )}
+
       {/* Platforms */}
       <span className="hidden lg:inline-flex text-[10px] text-slate-600 flex-shrink-0 whitespace-nowrap font-mono">
         {(idea.targetPlatforms ?? []).join(" · ")}

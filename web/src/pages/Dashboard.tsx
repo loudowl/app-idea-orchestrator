@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
-import { RefreshCw, Zap, Search, LayoutGrid, List } from "lucide-react";
+import { RefreshCw, Zap, Search, LayoutGrid, List, Cpu } from "lucide-react";
 import { fetchIdeas, fetchExecutions, createExecution, forceRun, fetchModels, type Idea, type Execution, type Provider } from "../api/client";
 import IdeaCard from "../components/IdeaCard";
 import IdeaRow from "../components/IdeaRow";
 import IdeaDetailModal from "../components/IdeaDetailModal";
+import RunProgressPanel from "../components/RunProgressPanel";
+import AgentSettingsModal from "../components/AgentSettingsModal";
 import StatsBar from "../components/StatsBar";
 import ExecutionPanel from "./ExecutionPanel";
 import clsx from "clsx";
@@ -45,6 +47,8 @@ export default function Dashboard() {
   const [pageSize, setPageSize] = useState<PageSize>(50);
   const [page, setPage] = useState(1);
   const [selectedIdea, setSelectedIdea] = useState<Idea | null>(null);
+  const [showProgress, setShowProgress] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   // Reset to page 1 when filters or page size change
   useEffect(() => { setPage(1); }, [complexity, search, pageSize]);
@@ -88,12 +92,9 @@ export default function Dashboard() {
   const forceMutation = useMutation({
     mutationFn: forceRun,
     onSuccess: () => {
+      setShowProgress(true);
       setForceToast(true);
-      setTimeout(() => setForceToast(false), 4000);
-      setTimeout(() => {
-        qc.invalidateQueries({ queryKey: ["ideas"] });
-        qc.invalidateQueries({ queryKey: ["stats"] });
-      }, 3000);
+      setTimeout(() => setForceToast(false), 3000);
     },
   });
 
@@ -189,6 +190,16 @@ export default function Dashboard() {
               })}
             </div>
           </div>
+
+          {/* Settings button */}
+          <button
+            onClick={() => setShowSettings(true)}
+            title="Agent model settings"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/8 text-slate-500 hover:text-slate-300 hover:border-white/15 text-xs transition-colors"
+          >
+            <Cpu size={13} />
+            <span className="hidden lg:inline">Models</span>
+          </button>
 
           {/* Force run */}
           <button
@@ -396,6 +407,22 @@ export default function Dashboard() {
           />
         )}
       </AnimatePresence>
+
+      {/* ── Agent run progress panel ──────────────────────────────────────── */}
+      <RunProgressPanel
+        open={showProgress}
+        onClose={() => setShowProgress(false)}
+        onViewNewIdeas={() => {
+          qc.invalidateQueries({ queryKey: ["ideas"] });
+          qc.invalidateQueries({ queryKey: ["stats"] });
+        }}
+      />
+
+      {/* ── Agent model settings modal ────────────────────────────────────── */}
+      <AgentSettingsModal
+        open={showSettings}
+        onClose={() => setShowSettings(false)}
+      />
     </div>
   );
 }
