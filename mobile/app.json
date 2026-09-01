@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "Idea Orchestrator",
+    "slug": "app-idea-orchestrator",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "ios": {
+      "supportsTablet": true
+    }
+  }
+}

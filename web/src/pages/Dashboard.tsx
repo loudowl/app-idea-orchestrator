@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 import { RefreshCw, Zap, Search, LayoutGrid, List, Cpu } from "lucide-react";
 import { fetchIdeas, fetchExecutions, createExecution, forceRun, fetchModels, type Idea, type Execution, type Provider } from "../api/client";
 import IdeaCard from "../components/IdeaCard";

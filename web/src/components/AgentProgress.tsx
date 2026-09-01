@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { CheckCircle, Loader2, Circle, AlertCircle } from "lucide-react";
 import type { WSEvent } from "../hooks/useExecutionWS";
 import clsx from "clsx";

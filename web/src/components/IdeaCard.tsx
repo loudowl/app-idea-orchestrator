@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { Zap, Clock, DollarSign, Play, CheckCircle, Loader2, AlertCircle, Info } from "lucide-react";
 import type { Idea, Execution } from "../api/client";
 import clsx from "clsx";
