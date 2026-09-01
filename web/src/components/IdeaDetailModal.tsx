@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { X, Clock, DollarSign, Zap, Target, Copy, Check } from "lucide-react";
 import type { Idea } from "../api/client";
 import clsx from "clsx";

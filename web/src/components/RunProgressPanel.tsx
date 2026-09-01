@@ -3,7 +3,7 @@
  * app-idea-agent SSE stream and renders live pipeline progress.
  */
 import { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { X, CheckCircle, AlertCircle, Clock } from "lucide-react";
 import { AGENT_STREAM_URL } from "../api/client";
 import clsx from "clsx";

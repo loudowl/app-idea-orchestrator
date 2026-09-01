@@ -4,7 +4,7 @@
  * app-idea-agent's own UI, proxied through the orchestrator backend.
  */
 import { useMemo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { X, Cpu } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchAgentSettings, saveAgentSettings } from "../api/client";

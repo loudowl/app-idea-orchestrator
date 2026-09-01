@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { motion } from "framer-motion";
-import { X, Github, ExternalLink, CheckCircle, Loader2, AlertCircle, RefreshCw } from "lucide-react";
+import { motion } from "motion/react";
+import { X, GitBranch, ExternalLink, CheckCircle, Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { fetchExecution, pushToGithub, retryExecution, type Provider } from "../api/client";
 import AgentProgress from "../components/AgentProgress";
@@ -219,7 +219,7 @@ export default function ExecutionPanel({ executionId, onClose }: Props) {
               disabled={pushMutation.isPending}
               className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-white/10 text-sm font-medium text-slate-200 transition-colors disabled:opacity-60"
             >
-              <Github size={15} />
+              <GitBranch size={15} />
               {pushMutation.isPending ? "Pushing…" : "Push to GitHub"}
             </button>
           )}
