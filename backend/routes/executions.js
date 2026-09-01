@@ -8,8 +8,7 @@
  *   POST /api/executions/:id/push → push completed project to GitHub
  */
 const express = require("express");
-const fetch = require("node-fetch");
-const { v4: uuidv4 } = require("uuid");
+const { randomUUID } = require("node:crypto");
 const router = express.Router();
 
 const db = require("../db/database");
@@ -59,7 +58,7 @@ router.post("/", async (req, res) => {
 
   // Store mapping in orchestrator DB
   const execution = db.createExecution({
-    id: uuidv4().slice(0, 8),
+    id: randomUUID().slice(0, 8),
     idea_id: String(idea._id),
     idea_name: idea.name,
     idea_tagline: idea.tagline || "",

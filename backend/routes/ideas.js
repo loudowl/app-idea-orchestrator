@@ -3,7 +3,7 @@
  * Also handles "force run" trigger.
  */
 const express = require("express");
-const fetch = require("node-fetch");
+const { Readable } = require("node:stream");
 const router = express.Router();
 
 const IDEA_AGENT = process.env.IDEA_AGENT_URL || "http://localhost:3001";
@@ -70,11 +70,12 @@ router.get("/agent/stream", async (req, res) => {
     return;
   }
 
-  upstreamRes.body.pipe(res);
+  // Global fetch (undici) exposes a WHATWG ReadableStream, not a Node stream,
+  // so adapt it before piping the SSE bytes straight to the caller.
+  const nodeStream = Readable.fromWeb(upstreamRes.body);
+  nodeStream.pipe(res);
   req.on("close", () => {
-    if (upstreamRes.body && !upstreamRes.body.destroyed) {
-      upstreamRes.body.destroy();
-    }
+    if (!nodeStream.destroyed) nodeStream.destroy();
   });
 });
 

@@ -2,7 +2,6 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const http = require("http");
-const fetch = require("node-fetch");
 
 const ideasRouter = require("./routes/ideas");
 const executionsRouter = require("./routes/executions");
