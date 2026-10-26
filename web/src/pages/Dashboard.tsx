@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "motion/react";
-import { RefreshCw, Zap, Search, LayoutGrid, List, Cpu } from "lucide-react";
+import { RefreshCw, Zap, Search, LayoutGrid, List, Cpu, ArrowDownWideNarrow, ArrowUpNarrowWide } from "lucide-react";
 import { fetchIdeas, fetchExecutions, createExecution, forceRun, fetchModels, type Idea, type Execution, type Provider } from "../api/client";
 import IdeaCard from "../components/IdeaCard";
 import IdeaRow from "../components/IdeaRow";
@@ -15,6 +15,7 @@ import clsx from "clsx";
 type Complexity = "all" | "simple" | "medium" | "complex";
 type ViewMode = "grid" | "compact";
 type PageSize = 10 | 50 | 100 | 200 | 300 | "all";
+type SortOrder = "newest" | "oldest";
 
 const PAGE_SIZE_OPTIONS: { value: PageSize; label: string }[] = [
   { value: 10,    label: "10"  },
@@ -44,14 +45,15 @@ export default function Dashboard() {
   const [forceToast, setForceToast] = useState(false);
   const [provider, setProvider] = useState<Provider>(loadProvider);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
   const [pageSize, setPageSize] = useState<PageSize>(50);
   const [page, setPage] = useState(1);
   const [selectedIdea, setSelectedIdea] = useState<Idea | null>(null);
   const [showProgress, setShowProgress] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
-  // Reset to page 1 when filters or page size change
-  useEffect(() => { setPage(1); }, [complexity, search, pageSize]);
+  // Reset to page 1 when filters, sort, or page size change
+  useEffect(() => { setPage(1); }, [complexity, search, pageSize, sortOrder]);
 
   const modelsQuery = useQuery({
     queryKey: ["models"],
@@ -65,13 +67,13 @@ export default function Dashboard() {
   };
 
   const ideasQuery = useQuery({
-    queryKey: ["ideas", complexity, search, pageSize, page],
+    queryKey: ["ideas", complexity, search, pageSize, page, sortOrder],
     queryFn: () => fetchIdeas({
       ...(complexity !== "all" ? { complexity } : {}),
       ...(search ? { search } : {}),
       limit: pageSize === "all" ? "9999" : String(pageSize),
       page: String(page),
-      sort: "-createdAt",
+      sort: sortOrder === "newest" ? "-createdAt" : "createdAt",
     }),
     staleTime: 30_000,
   });
@@ -264,6 +266,29 @@ export default function Dashboard() {
                 Compact
               </button>
             </div>
+
+            {/* Sort by creation date */}
+            <div className="flex rounded-xl border border-white/8 overflow-hidden">
+              {([["newest", "Newest"], ["oldest", "Oldest"]] as [SortOrder, string][]).map(
+                ([value, label]) => (
+                  <button
+                    key={value}
+                    onClick={() => setSortOrder(value)}
+                    title={value === "newest" ? "Newest first" : "Oldest first"}
+                    className={clsx(
+                      "flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors",
+                      sortOrder === value
+                        ? "bg-indigo-600/30 text-indigo-200"
+                        : "text-slate-500 hover:text-slate-300"
+                    )}
+                  >
+                    {value === "newest" ? <ArrowDownWideNarrow size={13} /> : <ArrowUpNarrowWide size={13} />}
+                    {label}
+                  </button>
+                )
+              )}
+            </div>
+
             {totalIdeas > 0 && (
               <span className="text-xs text-slate-600 font-mono">{totalIdeas} ideas</span>
             )}
