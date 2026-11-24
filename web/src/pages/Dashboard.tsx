@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "motion/react";
 import { RefreshCw, Zap, Search, LayoutGrid, List, Cpu } from "lucide-react";
-import { fetchIdeas, fetchExecutions, createExecution, forceRun, fetchModels, type Idea, type Execution, type Provider } from "../api/client";
+import { fetchIdeas, fetchExecutions, createExecution, forceRun, fetchModels, fetchSectors, type Idea, type Execution, type Provider } from "../api/client";
 import IdeaCard from "../components/IdeaCard";
+import SectorPicker from "../components/SectorPicker";
 import IdeaRow from "../components/IdeaRow";
 import IdeaDetailModal from "../components/IdeaDetailModal";
 import RunProgressPanel from "../components/RunProgressPanel";
@@ -36,6 +37,10 @@ function loadProvider(): Provider {
   return v === "openai" || v === "anthropic" || v === "ollama" ? v : "openai";
 }
 
+function loadSector(): string | null {
+  return localStorage.getItem("orchestrator:sector") || null;
+}
+
 export default function Dashboard() {
   const qc = useQueryClient();
   const [complexity, setComplexity] = useState<Complexity>("all");
@@ -43,6 +48,7 @@ export default function Dashboard() {
   const [activeExecution, setActiveExecution] = useState<string | null>(null);
   const [forceToast, setForceToast] = useState(false);
   const [provider, setProvider] = useState<Provider>(loadProvider);
+  const [sector, setSector] = useState<string | null>(loadSector);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [pageSize, setPageSize] = useState<PageSize>(50);
   const [page, setPage] = useState(1);
@@ -62,6 +68,18 @@ export default function Dashboard() {
   const selectProvider = (p: Provider) => {
     setProvider(p);
     localStorage.setItem("orchestrator:provider", p);
+  };
+
+  const sectorsQuery = useQuery({
+    queryKey: ["sectors"],
+    queryFn: fetchSectors,
+    staleTime: Infinity,
+  });
+
+  const selectSector = (s: string | null) => {
+    setSector(s);
+    if (s) localStorage.setItem("orchestrator:sector", s);
+    else localStorage.removeItem("orchestrator:sector");
   };
 
   const ideasQuery = useQuery({
@@ -90,7 +108,7 @@ export default function Dashboard() {
   });
 
   const forceMutation = useMutation({
-    mutationFn: forceRun,
+    mutationFn: () => forceRun(sector),
     onSuccess: () => {
       setShowProgress(true);
       setForceToast(true);
@@ -200,6 +218,14 @@ export default function Dashboard() {
             <Cpu size={13} />
             <span className="hidden lg:inline">Models</span>
           </button>
+
+          {/* Sector steering */}
+          <SectorPicker
+            sectors={sectorsQuery.data?.sectors ?? []}
+            value={sector}
+            onChange={selectSector}
+            disabled={forceMutation.isPending}
+          />
 
           {/* Force run */}
           <button

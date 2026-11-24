@@ -38,10 +38,16 @@ router.get("/categories", (req, res) => proxy(res, "/api/categories"));
 // GET /api/runs
 router.get("/runs", (req, res) => proxy(res, "/api/runs"));
 
-// POST /api/force-run  — trigger an immediate agent cycle
+// POST /api/force-run  — trigger an immediate agent cycle.
+// Optional body { sector } steers the run at a specific industry sector.
 router.post("/force-run", async (req, res) => {
   try {
-    const r = await fetch(`${IDEA_AGENT}/api/agent/run`, { method: "POST" });
+    const sector = req.body?.sector || null;
+    const r = await fetch(`${IDEA_AGENT}/api/agent/run`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sector }),
+    });
     const data = await r.json();
     // Broadcast to SSE clients
     req.app.locals.broadcastSSE({ type: "force_run_started", ...data });
@@ -50,6 +56,9 @@ router.post("/force-run", async (req, res) => {
     res.status(502).json({ error: `app-idea-agent unavailable: ${e.message}` });
   }
 });
+
+// GET /api/sectors — proxy the agent's list of steerable industry sectors
+router.get("/sectors", (req, res) => proxy(res, "/api/sectors"));
 
 // ── Agent progress SSE proxy ──────────────────────────────────────────────────
 
