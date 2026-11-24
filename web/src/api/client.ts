@@ -130,8 +130,14 @@ export const fetchIdea = (id: string): Promise<Idea> => req(`/api/ideas/${id}`);
 
 export const fetchCategories = (): Promise<string[]> => req("/api/categories");
 
-export const forceRun = (): Promise<{ message: string }> =>
-  req("/api/force-run", { method: "POST" });
+export const forceRun = (sector?: string | null): Promise<{ message: string }> =>
+  req("/api/force-run", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sector: sector ?? null }),
+  });
+
+export const fetchSectors = (): Promise<{ sectors: string[] }> => req("/api/sectors");
 
 // ── Executions ────────────────────────────────────────────────────────────────
 
